@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+native
+twitch-bot
+web
+backend/discord-bot
+backend/scheduler
+backend/supabase
+backend/supabase-grafana-agent
+backend/scripts
+*.md
+.env*
