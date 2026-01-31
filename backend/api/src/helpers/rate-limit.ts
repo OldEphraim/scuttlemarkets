@@ -4,7 +4,10 @@ import { HOUR_MS } from 'common/util/time'
 import { Request } from 'express'
 import { getIp } from 'shared/analytics'
 import { log } from 'shared/utils'
-import { createSupabaseDirectClient, SupabaseDirectClient } from 'shared/supabase/init'
+import {
+  createSupabaseDirectClient,
+  SupabaseDirectClient,
+} from 'shared/supabase/init'
 import { UserBan } from 'common/user'
 import { convertUser } from 'common/supabase/users'
 import {
@@ -13,12 +16,119 @@ import {
   getBanTypesForAction,
 } from 'common/ban-utils'
 
-type RateLimitOptions = {
-  maxCalls?: number // Maximum number of calls allowed in the time window
-  windowMs?: number // Time window in milliseconds (default: 1 hour)
+// ============================================================
+// Scuttle: Global rate limiter (called from endpoint.ts)
+// ============================================================
+
+interface RateLimitWindow {
+  count: number
+  resetAt: number
 }
 
-// Store rate limit data with timestamps
+const globalWindows = new Map<string, RateLimitWindow>()
+
+// Clean up stale entries periodically
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, window] of globalWindows) {
+    if (window.resetAt < now) {
+      globalWindows.delete(key)
+    }
+  }
+}, 60_000)
+
+interface RateLimitConfig {
+  maxRequests: number
+  windowMs: number
+}
+
+const DEFAULT_LIMIT: RateLimitConfig = { maxRequests: 100, windowMs: 60_000 }
+
+const ENDPOINT_LIMITS: Record<string, RateLimitConfig> = {
+  market: { maxRequests: 1, windowMs: 600_000 }, // 1 per 10 min
+  comment: { maxRequests: 2, windowMs: 60_000 }, // 2 per minute
+  'register-agent': { maxRequests: 5, windowMs: 3_600_000 }, // 5 per hour (by IP)
+}
+
+function getGlobalKey(identifier: string, endpoint: string): string {
+  return `${identifier}:${endpoint}`
+}
+
+function checkGlobalRateLimit(
+  key: string,
+  config: RateLimitConfig
+): { allowed: boolean; retryAfterMs: number } {
+  const now = Date.now()
+  const existing = globalWindows.get(key)
+
+  if (!existing || existing.resetAt < now) {
+    globalWindows.set(key, { count: 1, resetAt: now + config.windowMs })
+    return { allowed: true, retryAfterMs: 0 }
+  }
+
+  if (existing.count >= config.maxRequests) {
+    const retryAfterMs = existing.resetAt - now
+    return { allowed: false, retryAfterMs }
+  }
+
+  existing.count++
+  return { allowed: true, retryAfterMs: 0 }
+}
+
+function getClientIp(req: Request): string {
+  return (
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    req.socket.remoteAddress ||
+    ''
+  )
+}
+
+export function enforceRateLimit(
+  req: Request,
+  endpointName: string,
+  apiKey?: string
+): void {
+  const identifier = apiKey || getClientIp(req) || 'unknown'
+
+  // Check endpoint-specific limit
+  const endpointConfig = ENDPOINT_LIMITS[endpointName]
+  if (endpointConfig) {
+    const limitKey =
+      endpointName === 'register-agent'
+        ? getGlobalKey(getClientIp(req) || 'unknown', endpointName)
+        : getGlobalKey(identifier, endpointName)
+
+    const result = checkGlobalRateLimit(limitKey, endpointConfig)
+    if (!result.allowed) {
+      throw new APIError(
+        429,
+        `Rate limit exceeded for ${endpointName}. Retry after ${Math.ceil(result.retryAfterMs / 1000)} seconds.`
+      )
+    }
+  }
+
+  // Check global per-key limit
+  if (apiKey) {
+    const globalKey = getGlobalKey(apiKey, '_global')
+    const result = checkGlobalRateLimit(globalKey, DEFAULT_LIMIT)
+    if (!result.allowed) {
+      throw new APIError(
+        429,
+        `Rate limit exceeded. ${DEFAULT_LIMIT.maxRequests} requests per ${DEFAULT_LIMIT.windowMs / 1000} seconds. Retry after ${Math.ceil(result.retryAfterMs / 1000)} seconds.`
+      )
+    }
+  }
+}
+
+// ============================================================
+// Original Manifold rate limiters (per-endpoint wrappers)
+// ============================================================
+
+type RateLimitOptions = {
+  maxCalls?: number
+  windowMs?: number
+}
+
 type RateLimitData = {
   count: number
   timestamps: number[]
@@ -29,8 +139,6 @@ export const rateLimitByUser = <N extends APIPath>(
   options: RateLimitOptions = {}
 ) => {
   const { maxCalls = 25, windowMs = HOUR_MS } = options
-
-  // Track rate limits by user ID and endpoint
   const rateLimits = new Map<string, Map<N, RateLimitData>>()
 
   return async (
@@ -58,7 +166,6 @@ export const rateLimitByUser = <N extends APIPath>(
     const limitData = userLimits.get(endpoint)!
 
     const now = Date.now()
-
     limitData.timestamps = limitData.timestamps.filter(
       (time) => now - time < windowMs
     )
@@ -84,8 +191,6 @@ export const rateLimitByIp = <N extends APIPath>(
   options: RateLimitOptions = {}
 ) => {
   const { maxCalls = 25, windowMs = HOUR_MS } = options
-
-  // Track rate limits by IP address and endpoint
   const rateLimits = new Map<string, Map<N, RateLimitData>>()
 
   return async (
@@ -113,7 +218,6 @@ export const rateLimitByIp = <N extends APIPath>(
     const limitData = ipLimits.get(endpoint)!
 
     const now = Date.now()
-
     limitData.timestamps = limitData.timestamps.filter(
       (time) => now - time < windowMs
     )
@@ -134,8 +238,10 @@ export const rateLimitByIp = <N extends APIPath>(
   }
 }
 
-// Get active bans for a user from the database
-// Accepts optional pg client for use within transactions
+// ============================================================
+// Ban checking utilities
+// ============================================================
+
 export async function getActiveUserBans(
   userId: string,
   pg?: SupabaseDirectClient
@@ -176,7 +282,6 @@ export const onlyUnbannedUsers = <N extends APIPath>(f: APIHandler<N>) => {
   }
 }
 
-// Map action names to human-readable descriptions for error messages
 const getActionDisplayName = (action: string): string => {
   const actionNames: Record<string, string> = {
     comment: 'commenting',
@@ -201,7 +306,6 @@ const getActionDisplayName = (action: string): string => {
   return actionNames[action] || action
 }
 
-// New granular ban check - uses pg.multi for single roundtrip
 export const onlyUsersWhoCanPerformAction = <N extends APIPath>(
   action: string,
   f: APIHandler<N>
@@ -223,7 +327,6 @@ export const onlyUsersWhoCanPerformAction = <N extends APIPath>(
       throw new APIError(403, 'Your account has been deleted')
     }
 
-    // Check all relevant ban types for this action
     const banTypes = getBanTypesForAction(action)
     for (const banType of banTypes) {
       if (isUserBanned(activeBans, banType)) {

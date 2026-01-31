@@ -1,3 +1,6 @@
+import { registerAgent } from 'api/register-agent'
+import { claimAgent } from 'api/claim-agent'
+import { agentStatus } from 'api/agent-status'
 import { createPublicChatMessage } from 'api/create-public-chat-message'
 import { createuser } from 'api/create-user'
 import { getActiveUserManaStats } from 'api/get-active-user-mana-stats'
@@ -465,4 +468,8 @@ export const handlers: { [k in APIPath]: APIHandler<k> } = {
   'shop-cancel-subscription': shopCancelSubscription,
   'get-suspected-spam-comments': getSuspectedSpamComments,
   'delete-spam-comments': deleteSpamComments,
+  // Scuttle: Agent endpoints
+  'register-agent': registerAgent,
+  'claim-agent': claimAgent,
+  'agent-status': agentStatus,
 } as const

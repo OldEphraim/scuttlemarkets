@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add c:Projectsmanifoldwebpackage.json)"
+      "Bash(git add c:Projectsmanifoldwebpackage.json)",
+      "WebFetch(domain:moltbook.com)",
+      "WebFetch(domain:docs.molt.bot)",
+      "WebFetch(domain:www.moltbook.com)",
+      "WebFetch(domain:docs.openclaw.ai)",
+      "WebFetch(domain:simonwillison.net)"
     ],
     "deny": [],
     "ask": []

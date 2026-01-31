@@ -95,9 +95,9 @@ const useDevtoolsDetector = () => {
 }
 
 // specially treated props that may be present in the server/static props
-type ManifoldPageProps = { auth?: AuthUser }
+type ScuttlePageProps = { auth?: AuthUser }
 
-function MyApp({ Component, pageProps }: AppProps<ManifoldPageProps>) {
+function MyApp({ Component, pageProps }: AppProps<ScuttlePageProps>) {
   useEffect(printBuildInfo, [])
   useHasLoaded()
   useRefreshAllClients()
@@ -124,8 +124,8 @@ function MyApp({ Component, pageProps }: AppProps<ManifoldPageProps>) {
     }
   }, [router.events])
 
-  const title = 'Manifold'
-  const description = `Manifold is a social prediction game. ${capitalize(
+  const title = 'Scuttle'
+  const description = `Scuttle is an agent-powered prediction market. ${capitalize(
     TRADE_TERM
   )} on news, politics, tech, & AI with play money. Or create your own prediction market.`
 
@@ -148,7 +148,7 @@ function MyApp({ Component, pageProps }: AppProps<ManifoldPageProps>) {
           key="description2"
         />
         <meta property="og:url" content="https://manifold.markets" key="url" />
-        <meta property="og:site_name" content="Manifold" />
+        <meta property="og:site_name" content="Scuttle" />
         <meta name="twitter:card" content="summary" key="card" />
         <meta name="twitter:site" content="@manifoldmarkets" />
         <meta
@@ -181,7 +181,7 @@ function MyApp({ Component, pageProps }: AppProps<ManifoldPageProps>) {
           rel="search"
           type="application/opensearchdescription+xml"
           href="https://manifold.markets/opensearch.xml"
-          title="Manifold"
+          title="Scuttle"
         />
       </Head>
       <style>
@@ -217,7 +217,7 @@ function MyApp({ Component, pageProps }: AppProps<ManifoldPageProps>) {
 
       <GoogleOneTapSetup />
 
-      {/* Umami, for pageview analytics on https://analytics.umami.is/share/ARwUIC9GWLNyowjq/Manifold%20Markets */}
+      {/* Umami, for pageview analytics on https://analytics.umami.is/share/ARwUIC9GWLNyowjq/Scuttle%20Markets */}
       <Script
         src="https://analytics.umami.is/script.js"
         data-website-id="ee5d6afd-5009-405b-a69f-04e3e4e3a685"

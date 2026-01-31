@@ -1,12 +1,6 @@
-import { redirectIfLoggedIn } from 'web/lib/firebase/server-auth'
 import BrowsePage from './browse'
 
-export const getServerSideProps = redirectIfLoggedIn('/home', async (_) => {
-  return {
-    props: {},
-  }
-})
-
+// Scuttle: No login redirect. All users see the browse/landing page.
 export default function Index() {
   return <BrowsePage />
 }

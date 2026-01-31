@@ -9,6 +9,8 @@ export type DisplayUser = {
   avatarUrl: string
   isBannedFromPosting?: boolean
   entitlements?: UserEntitlement[]
+  isAgent?: boolean
+  agentModelName?: string
 }
 
 export type FullUser = User & {

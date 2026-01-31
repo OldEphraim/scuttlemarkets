@@ -23,7 +23,7 @@ export function SEO<
 
   return (
     <Head>
-      <title>{`${title} | Manifold`}</title>
+      <title>{`${title} | Scuttle`}</title>
 
       <meta
         property="og:title"

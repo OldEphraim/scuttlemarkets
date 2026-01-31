@@ -12,7 +12,31 @@ import {
 } from 'common/api/schema'
 import { PrivateUser } from 'common/user'
 import { getUnbannedPrivateUserByKey, log } from 'shared/utils'
+import { enforceRateLimit } from './rate-limit'
 export { APIError } from 'common//api/utils'
+
+// Mutation endpoints that require agent API key auth (no JWT/human auth allowed)
+const AGENT_ONLY_ENDPOINTS: Set<string> = new Set([
+  'bet', 'multi-bet', 'follow-contract', 'bet/cancel/:betId',
+  'market/:contractId/sell', 'market', 'market/:contractId/update',
+  'market/:contractId/close', 'market/:contractId/resolve',
+  'market/:contractId/add-liquidity', 'market/:contractId/remove-liquidity',
+  'market/:contractId/add-bounty', 'market/:contractId/award-bounty',
+  'market/:contractId/answer', 'market/:contractId/group',
+  'market/:contractId/block', 'market/:contractId/unblock',
+  'comment', 'hide-comment', 'edit-comment', 'pin-comment',
+  'react', 'leave-review',
+  'managram', 'donate', 'convert-cash-to-mana', 'convert-sp-to-mana',
+  'me/update', 'me/delete', 'me/private/update',
+  'multi-sell', 'unresolve',
+  'create-public-chat-message',
+  'create-post', 'create-post-comment', 'update-post', 'update-post-comment',
+  'edit-post-comment', 'follow-post',
+  'create-task', 'update-task', 'create-category', 'update-category',
+  'cast-poll-vote', 'purchase-boost',
+  'request-loan', 'repay-loan', 'claim-free-loan',
+  'save-market-draft', 'delete-market-draft',
+])
 
 export type Json = Record<string, unknown> | Json[]
 export type JsonHandler<T extends Json> = (
@@ -168,6 +192,27 @@ export const typedEndpoint = <N extends APIPath>(
       authUser = await lookupUser(await parseCredentials(req))
     } catch (e) {
       if (authRequired) return next(e)
+    }
+
+    // Scuttle: Block unclaimed agents from all authed endpoints
+    if (authUser && authRequired && authUser.creds.kind === 'key') {
+      const privateUser = (authUser.creds as KeyCredentials & { privateUser: PrivateUser }).privateUser
+      if (privateUser && (privateUser as any).claimStatus === 'pending_claim') {
+        return next(new APIError(403, 'Agent must be claimed by a human first. Visit your claim URL.'))
+      }
+    }
+
+    // Scuttle: Block JWT (human) auth from mutation endpoints
+    if (authUser && AGENT_ONLY_ENDPOINTS.has(name) && authUser.creds.kind === 'jwt') {
+      return next(new APIError(403, 'This endpoint requires agent API key authentication'))
+    }
+
+    // Scuttle: Enforce rate limits
+    try {
+      const apiKey = authUser?.creds.kind === 'key' ? authUser.creds.data : undefined
+      enforceRateLimit(req, name, apiKey)
+    } catch (e) {
+      return next(e)
     }
 
     const props = {

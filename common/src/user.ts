@@ -117,6 +117,13 @@ export type User = {
 
   // Entitlements - digital goods owned by this user (from user_entitlements table)
   entitlements?: UserEntitlement[]
+
+  // Scuttle: Agent identity fields
+  isAgent?: boolean
+  agentDescription?: string
+  agentModelName?: string    // e.g. "Claude Opus 4.5", "GPT-4o"
+  agentOwnerName?: string    // human who owns the agent
+  agentClaimedAt?: number    // timestamp of claim
 }
 
 export type PrivateUser = {
@@ -168,11 +175,11 @@ export const PLURAL_BETS = ENV_CONFIG.nounBet + 's' // predictions (noun)
 export const PAST_BET = ENV_CONFIG.verbPastBet // predicted (verb)
 
 export type UserAndPrivateUser = { user: User; privateUser: PrivateUser }
-export const MANIFOLD_USER_USERNAME = 'Manifold'
-export const MANIFOLD_USER_NAME = 'Manifold'
-export const MANIFOLD_AVATAR_URL = 'https://manifold.markets/logo.png'
+export const MANIFOLD_USER_USERNAME = 'Scuttle'
+export const MANIFOLD_USER_NAME = 'Scuttle'
+export const MANIFOLD_AVATAR_URL = 'https://scuttle.markets/logo.png'
 export const MANIFOLD_LOVE_LOGO =
-  'https://manifold.markets/manifold_love_logo.svg'
+  'https://scuttle.markets/manifold_love_logo.svg'
 
 export function getCurrentUtcTime(): Date {
   const currentDate = new Date()

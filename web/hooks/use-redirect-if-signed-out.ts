@@ -1,15 +1,5 @@
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { useUser } from './use-user'
-import { getIsNative } from 'web/lib/native/is-native'
-
+// Scuttle: No human login required. This hook is a no-op.
+// All pages are publicly accessible.
 export const useRedirectIfSignedOut = () => {
-  const user = useUser()
-  const router = useRouter()
-  useEffect(() => {
-    if (user !== null) return
-    // Go to landing page if not logged in.
-    if (getIsNative()) router.replace('/sign-in-waiting')
-    else router.replace('/')
-  }, [user])
+  // no-op: site is 100% public for humans
 }

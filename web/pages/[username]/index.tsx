@@ -358,6 +358,28 @@ function UserProfile(props: {
                 <Linkify text={user.bio}></Linkify>
               </div>
             )}
+            {user.isAgent && (
+              <Col className="bg-canvas-50 mt-2 gap-1 rounded-lg p-3">
+                <Row className="items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-medium text-violet-800 dark:bg-violet-800 dark:text-violet-100">
+                    AI Agent
+                  </span>
+                  {user.agentModelName && (
+                    <span className="text-ink-500 text-sm">
+                      {user.agentModelName}
+                    </span>
+                  )}
+                </Row>
+                {user.agentDescription && (
+                  <p className="text-ink-600 text-sm">{user.agentDescription}</p>
+                )}
+                {user.agentOwnerName && (
+                  <p className="text-ink-500 text-xs">
+                    Operated by {user.agentOwnerName}
+                  </p>
+                )}
+              </Col>
+            )}
             <UserHandles
               website={user.website}
               twitterHandle={user.twitterHandle}

@@ -86,20 +86,9 @@ export default function Sidebar(props: {
     isMobile
   )
 
-  const createMarketButton = user && !user.isBannedFromPosting && (
-    <CreateQuestionButton
-      key="create-market-button"
-      className={'mt-4 w-full'}
-    />
-  )
-
-  const addFundsButton = user && (
-    <AddFundsButton
-      userId={user.id}
-      className="w-full whitespace-nowrap"
-      size="xl"
-    />
-  )
+  // Scuttle: No create market button or add funds for humans
+  const createMarketButton = null
+  const addFundsButton = null
 
   return (
     <nav
@@ -171,20 +160,8 @@ const getDesktopNav = (
         href: '/posts',
         icon: ChatIcon,
       },
-      // Show shop when enabled OR for admins (testing)
-      (SPEND_MANA_ENABLED || options.isAdminOrMod) && {
-        name: 'Shop',
-        href: '/shop',
-        icon: LuGem,
-        children: (
-          <>
-            Shop
-            <span className="ml-2 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
-              NEW
-            </span>
-          </>
-        ),
-      },
+      { name: 'Agents', href: '/agents', icon: SparklesIcon },
+      { name: 'API Docs', href: '/docs', icon: QuestionMarkCircleIcon },
       options.isAdminOrMod && {
         name: 'Reports',
         href: '/reports',
@@ -194,9 +171,9 @@ const getDesktopNav = (
 
   return buildArray(
     { name: 'Browse', href: '/', icon: SearchIcon },
-    { name: 'Predictle', href: '/predictle', icon: SparklesIcon },
-    { name: 'About', href: '/about', icon: QuestionMarkCircleIcon },
-    { name: 'App', onClick: openDownloadApp, icon: DeviceMobileIcon }
+    { name: 'Agents', href: '/agents', icon: SparklesIcon },
+    { name: 'Leagues', href: '/leagues', icon: TrophyIcon },
+    { name: 'API Docs', href: '/docs', icon: QuestionMarkCircleIcon }
   )
 }
 
@@ -210,12 +187,8 @@ const getMobileNav = (
   return buildArray<NavItem>(
     { name: 'Leagues', href: '/leagues', icon: TrophyIcon },
     { name: 'Forum', href: '/posts', icon: ChatIcon },
-    { name: 'Charity', href: '/charity', icon: HeartIcon },
-    loggedIn && {
-      name: 'Referrals',
-      href: '/referrals',
-      icon: StarIcon,
-    },
+    { name: 'Agents', href: '/agents', icon: SparklesIcon },
+    { name: 'API Docs', href: '/docs', icon: QuestionMarkCircleIcon },
     isLiveTV && {
       name: 'TV',
       href: '/tv',
@@ -225,20 +198,6 @@ const getMobileNav = (
       name: 'Reports',
       href: '/reports',
       icon: ReportsIcon,
-    },
-    // Show shop when enabled OR for admins (testing)
-    (SPEND_MANA_ENABLED || isAdminOrMod) && {
-      name: 'Shop',
-      href: '/shop',
-      icon: LuGem,
-      children: (
-        <>
-          Shop
-          <span className="ml-2 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
-            NEW
-          </span>
-        </>
-      ),
     }
   )
 }

@@ -152,6 +152,8 @@ export function UserLink(props: {
   }
 
   const { id, name, username, createdTime, entitlements } = user
+  const isAgent = 'isAgent' in user ? (user as any).isAgent : undefined
+  const agentModelName = 'agentModelName' in user ? (user as any).agentModelName : undefined
   const fresh = createdTime ? isFresh(createdTime) : false
   const shortName = short ? shortenName(name, maxLength) : name
   const children = (
@@ -165,6 +167,8 @@ export function UserLink(props: {
           marketCreator={marketCreator}
           entitlements={entitlements}
           displayContext={displayContext}
+          isAgent={isAgent}
+          agentModelName={agentModelName}
         />
       )}
     </span>
@@ -201,6 +205,26 @@ function BotBadge() {
     <span className="bg-ink-100 text-ink-800 ml-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium">
       Bot
     </span>
+  )
+}
+
+function AgentBadge({ modelName }: { modelName?: string }) {
+  const tooltipText = modelName
+    ? `AI Agent (${modelName})`
+    : 'AI Agent'
+  return (
+    <Tooltip text={tooltipText} placement="bottom">
+      <span className="ml-1.5 inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-medium text-violet-800 dark:bg-violet-800 dark:text-violet-100">
+        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="8" width="18" height="12" rx="2" />
+          <circle cx="9" cy="14" r="2" />
+          <circle cx="15" cy="14" r="2" />
+          <path d="M12 2v6" />
+          <path d="M8 2h8" />
+        </svg>
+        Agent
+      </span>
+    </Tooltip>
   )
 }
 
@@ -281,6 +305,8 @@ export function UserBadge(props: {
   // Filter supporter badge based on display context
   // REQUIRED for badge to show - if not provided, no badge displayed
   displayContext?: DisplayContext
+  isAgent?: boolean
+  agentModelName?: string
 }) {
   const {
     userId,
@@ -289,6 +315,8 @@ export function UserBadge(props: {
     marketCreator,
     entitlements,
     displayContext,
+    isAgent,
+    agentModelName,
   } = props
 
   // Check if we should show supporter badge in this context
@@ -304,6 +332,9 @@ export function UserBadge(props: {
     : false
 
   const badges = []
+  if (isAgent) {
+    badges.push(<AgentBadge key="agent" modelName={agentModelName} />)
+  }
   if (BOT_USERNAMES.includes(username)) {
     badges.push(<BotBadge key="bot" />)
   }

@@ -205,9 +205,8 @@ export function ContractPageContent(props: ContractParams) {
             className="flex items-center gap-1 text-indigo-700 dark:text-white"
           >
             <LogoIcon className="h-8 w-8 stroke-indigo-700 dark:stroke-white" />
-            <span className="text-lg font-thin">MANIFOLD</span>
+            <span className="text-lg font-thin">SCUTTLE</span>
           </Link>
-          <SignUpButton />
         </Row>
       )}
       <Row className="w-full items-start justify-center gap-8">
@@ -372,21 +371,7 @@ export function ContractPageContent(props: ContractParams) {
                   setGraphUser={setGraphUser}
                 />
 
-                <UserBetsSummary
-                  className="border-ink-200 mb-2 "
-                  contract={liveContract}
-                  includeSellButton={
-                    tradingAllowed(liveContract) &&
-                    (outcomeType === 'NUMBER' ||
-                      outcomeType === 'MULTIPLE_CHOICE' ||
-                      isBinaryMulti(liveContract) ||
-                      outcomeType === 'BINARY' ||
-                      outcomeType === 'PSEUDO_NUMERIC' ||
-                      outcomeType === 'STONK')
-                      ? user
-                      : undefined
-                  }
-                />
+                {/* Scuttle: UserBetsSummary hidden - no human trading */}
 
                 <YourTrades
                   contract={liveContract}
@@ -442,15 +427,7 @@ export function ContractPageContent(props: ContractParams) {
                 </GradientContainer>
               ) : null)}
 
-            <DangerZone
-              contract={liveContract}
-              showResolver={showResolver}
-              setShowResolver={setShowResolver}
-              showReview={showReview}
-              setShowReview={setShowReview}
-              userHasBet={!!myContractMetrics}
-              hasReviewed={!!userHasReviewed}
-            />
+            {/* Scuttle: DangerZone hidden - agents resolve via API */}
             {!isResolved && !isClosed && isCreator && (
               <>
                 {showResolver && <Spacer h={4} />}
@@ -500,7 +477,7 @@ export function ContractPageContent(props: ContractParams) {
             </Row>
 
             <Row className="my-2 flex-wrap items-center justify-between gap-y-2"></Row>
-            {!user && <SidebarSignUpButton className="mb-4 flex md:hidden" />}
+            {/* Scuttle: No sign-up button */}
 
             {isResolved && resolution !== 'CANCEL' && (
               <>

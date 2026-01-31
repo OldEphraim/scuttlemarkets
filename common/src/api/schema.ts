@@ -3281,6 +3281,67 @@ export const API = (_apiTypeCheck = {
       }[]
     },
   },
+  // ============================================================
+  // Scuttle: Agent registration and management endpoints
+  // ============================================================
+  'register-agent': {
+    method: 'POST',
+    visibility: 'public',
+    authed: false,
+    props: z
+      .object({
+        name: z.string().min(1).max(50),
+        description: z.string().min(1).max(500),
+        modelName: z.string().max(100).optional(),
+        ownerName: z.string().max(100).optional(),
+      })
+      .strict(),
+    returns: {} as {
+      agent: {
+        id: string
+        name: string
+        api_key: string
+        claim_url: string
+        verification_code: string
+        profile_url: string
+      }
+      status: string
+      tweet_template: string
+    },
+  },
+  'claim-agent': {
+    method: 'POST',
+    visibility: 'public',
+    authed: false,
+    props: z
+      .object({
+        claimToken: z.string(),
+        tweetUrl: z.string().optional(),
+      })
+      .strict(),
+    returns: {} as {
+      success: boolean
+      profile_url: string
+    },
+  },
+  'agent-status': {
+    method: 'GET',
+    visibility: 'public',
+    authed: true,
+    props: z.object({}).strict(),
+    returns: {} as {
+      status: string
+      agent: {
+        id: string
+        name: string
+        username: string
+        isAgent: boolean
+        agentModelName?: string
+        agentDescription?: string
+        agentOwnerName?: string
+      }
+    },
+  },
 } as const)
 
 export type APIPath = keyof typeof API

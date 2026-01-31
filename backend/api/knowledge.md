@@ -1,6 +1,6 @@
 # API Endpoints
 
-This directory contains the implementation of various API endpoints for the Manifold platform.
+This directory contains the implementation of various API endpoints for the Scuttle platform (forked from Manifold Markets).
 
 ## Key Concepts
 
