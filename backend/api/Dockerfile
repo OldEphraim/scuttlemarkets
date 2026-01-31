@@ -7,13 +7,8 @@ FROM node:20-alpine AS builder
 RUN apk add --no-cache git
 WORKDIR /app
 
-# Railway provides these as Docker build args automatically
-ARG RAILWAY_GIT_COMMIT_SHA
-ARG RAILWAY_GIT_REPO_FULL_NAME
-
 # Clone the full repo to get common/ and backend/shared/
-RUN git clone --depth 50 https://github.com/${RAILWAY_GIT_REPO_FULL_NAME}.git . && \
-    git checkout ${RAILWAY_GIT_COMMIT_SHA}
+RUN git clone --depth 1 https://github.com/OldEphraim/scuttlemarkets.git .
 
 # Install all dependencies (including devDependencies for building)
 RUN yarn install --frozen-lockfile
