@@ -25,6 +25,7 @@ export const getServerSideProps = redirectIfLoggedOut('/', async (ctx) => {
     return { notFound: true }
   }
   const adminDb = await initSupabaseAdmin()
+  if (!adminDb) return { notFound: true }
   const [link, numClaims] = await Promise.all([
     getManalink(slug, adminDb),
     getNumClaims(slug, adminDb),

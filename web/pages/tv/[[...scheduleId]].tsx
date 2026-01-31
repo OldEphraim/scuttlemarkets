@@ -12,6 +12,7 @@ export async function getStaticProps(props: {
   params: { scheduleId: string[] }
 }) {
   const db = await initSupabaseAdmin()
+  if (!db) return { props: { schedule: [], contracts: [] }, revalidate: 60 }
   const scheduleId = props.params.scheduleId?.[0] ?? null
 
   const cutoff = new Date(Date.now() - HOUR_MS).toISOString()

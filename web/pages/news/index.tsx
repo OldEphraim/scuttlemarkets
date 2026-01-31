@@ -40,6 +40,7 @@ export async function getStaticProps() {
       .slice(0, 20) // preload just the first n questions
 
     const db = await initSupabaseAdmin()
+    if (!db) return { props: { state: 'not found' }, revalidate: 60 }
 
     const previews = await fetchLinkPreviews(links)
     const fullContracts = await getContracts(db, questionSlugs, 'slug')

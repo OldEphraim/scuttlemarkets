@@ -17,6 +17,7 @@ export async function getStaticProps(ctx: {
 }) {
   const { contractSlug } = ctx.params
   const adminDb = await initSupabaseAdmin()
+  if (!adminDb) return { notFound: true, revalidate: 60 }
 
   let contract
   try {

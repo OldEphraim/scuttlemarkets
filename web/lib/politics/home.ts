@@ -25,6 +25,7 @@ export const ELECTION_PARTY_CONTRACT_SLUG =
 
 export async function getElectionsPageProps() {
   const adminDb = await initSupabaseAdmin()
+  if (!adminDb) return {} as any
   const getContractFromSlugFunction = (slug: string) =>
     getContractFromSlug(adminDb, slug)
 

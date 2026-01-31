@@ -33,6 +33,7 @@ const LINKS_PER_PAGE = 24
 
 export const getServerSideProps = redirectIfLoggedOut('/', async (_, creds) => {
   const adminDb = await initSupabaseAdmin()
+  if (!adminDb) return { props: { user: null, userLinks: [] } } as any
   const [user, links, claims] = await Promise.all([
     getUserForStaticProps(adminDb, creds.uid),
     getUserManalinks(creds.uid, adminDb),

@@ -11,12 +11,17 @@ let key =
 
 export async function initSupabaseAdmin() {
   if (key == null) {
-    console.warn(
-      'Loading Supabase key from GCP. (Should happen only locally, never in production!)'
-    )
-    const creds = getServiceAccountCredentials(ENV)
-    const result = await getSecrets(creds, 'SUPABASE_KEY')
-    key = result['SUPABASE_KEY']
+    try {
+      console.warn(
+        'Loading Supabase key from GCP. (Should happen only locally, never in production!)'
+      )
+      const creds = getServiceAccountCredentials(ENV)
+      const result = await getSecrets(creds, 'SUPABASE_KEY')
+      key = result['SUPABASE_KEY']
+    } catch (e) {
+      console.warn('Could not load Supabase admin key:', e)
+      return null
+    }
   }
   return createClient(getSupabaseInstanceId(), key)
 }

@@ -6,6 +6,7 @@ import { initSupabaseAdmin } from 'web/lib/supabase/admin-db'
 export async function getStaticProps(props: { params: { slugs: string[] } }) {
   const { slugs } = props.params
   const adminDb = await initSupabaseAdmin()
+  if (!adminDb) return { props: { contracts: [] }, revalidate: 60 }
   const contracts = await getContracts(adminDb, slugs, 'slug')
 
   return {

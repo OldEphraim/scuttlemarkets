@@ -23,6 +23,7 @@ const SAMPLING_P = 0.02
 
 export const getStaticProps = async () => {
   const db = await initSupabaseAdmin()
+  if (!db) return { props: { points: [], score: 0, n: 0, trumpMarket: null, gazaMarket: null, sbfMarket: null }, revalidate: 60 }
 
   try {
     const result = await db

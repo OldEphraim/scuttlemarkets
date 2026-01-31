@@ -22,6 +22,7 @@ export async function getStaticProps() {
     }
   }
   const adminDb = await initSupabaseAdmin()
+  if (!adminDb) return { props: {}, revalidate }
   const complexSystemsContract = await getContractFromSlug(
     adminDb,
     'who-will-be-on-the-complex-systems'
