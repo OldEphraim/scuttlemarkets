@@ -4,7 +4,7 @@
 
 # --- Stage 1: Build TypeScript ---
 FROM node:20-alpine AS builder
-RUN apk add --no-cache git
+RUN apk add --no-cache git rsync
 WORKDIR /app
 
 # Clone the full repo to get common/ and backend/shared/
